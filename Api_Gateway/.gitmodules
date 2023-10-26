@@ -1,0 +1,3 @@
+[submodule "market-protos"]
+	path = market-protos
+	url = https://gitlab.com/market3723841/market-protos.git

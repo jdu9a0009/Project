@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package sale_service;
+option go_package = "genproto/sale_service";
+import "sale.proto";
+
+
+service BpTransactionService {
+  rpc Create(CreateBpTransactionRequest) returns (IdResponse) {}
+  rpc Get(IdRequest) returns (GetBpTransactionResponse) {}
+  rpc GetAll(GetAllBpTransactionRequest) returns (GetAllBpTransactionResponse) {}
+  rpc Update(UpdateBpTransactionRequest) returns (Response) {}
+  rpc Delete(IdRequest) returns (Response) {}
+}
+
+message CreateBpTransactionRequest {
+  string id =1;
+  string branch_id = 2;
+  string staff_id = 3;
+  string product_id = 4;
+  float price = 5;
+  string type =6;
+  int32 quantity =7;
+
+}
+
+message BpTransaction {
+    string id =1;
+    string branch_id = 2;
+    string staff_id = 3;
+    string product_id = 4;
+    float price = 5;
+    string type =6;
+    int32 quantity =7;
+    string created_at = 8;
+    string updated_at = 9;
+}
+
+
+
+message UpdateBpTransactionRequest {
+    string id =1;
+    string branch_id = 2;
+    string staff_id = 3;
+    string product_id = 4;
+    float price = 5;
+    string type =6;
+    int32 quantity =7;
+}
+
+message GetBpTransactionResponse {
+  BpTransaction Bpransaction = 1;
+}
+
+message GetAllBpTransactionRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string search = 3;
+}
+
+message GetAllBpTransactionResponse {
+  repeated BpTransaction Bpransactions = 1;
+  int32 count = 2;
+}
