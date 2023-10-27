@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -30,21 +31,69 @@ func (h *Handler) CreateSaleProduct(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.services.SaleProductService().Create(ctx, &sale_service.CreateSaleProductRequest{
-		Id:        saleProduct.Id,
-		SaleId:    saleProduct.SaleId,
-		ProductId: saleProduct.ProductId,
-		Quantity:  saleProduct.Quantity,
-		Price:     saleProduct.Price,
-	})
-
+	respSale, err := h.services.SaleService().Get(ctx, &sale_service.IdRequest{Id: saleProduct.SaleId})
 	if err != nil {
-		h.handlerResponse(ctx, "SaleProductService().Create", http.StatusBadRequest, err.Error())
-
+		h.handlerResponse(ctx, "SaleGet error", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	h.handlerResponse(ctx, "create sale product response", http.StatusOK, resp)
+	respWarehouse, err := h.services.BranchProductService().GetProduct(ctx, &sale_service.GetProductRequest{
+		BranchId:  respSale.BranchId,
+		ProductId: saleProduct.ProductId,
+	})
+
+	if err != nil {
+		h.handlerResponse(ctx, "Check product in warehouse", http.StatusInternalServerError, err.Error())
+		return
+	}
+	respSaleProduct, err := h.services.SaleProductService().GetSaleById(ctx, &sale_service.SaleIdRequest{
+		SaleId:    saleProduct.SaleId,
+		ProductId: saleProduct.ProductId,
+	})
+	if err != nil {
+		if respWarehouse.Count >= int32(saleProduct.Quantity) {
+			resp, err := h.services.SaleProductService().Create(ctx, &sale_service.CreateSaleProductRequest{
+				Id:        saleProduct.Id,
+				SaleId:    saleProduct.SaleId,
+				ProductId: saleProduct.ProductId,
+				Quantity:  saleProduct.Quantity,
+				Price:     saleProduct.Price,
+			})
+			if err != nil {
+				h.handlerResponse(ctx, "SaleProductService().Create", http.StatusBadRequest, err.Error())
+
+				return
+			}
+
+			h.handlerResponse(ctx, "create sale product response", http.StatusOK, resp)
+		} else {
+			fmt.Println("Not Enough Product", err.Error())
+			ctx.JSON(http.StatusBadRequest, "not enough product")
+			return
+		}
+
+	}
+	if respWarehouse.Count >= int32(saleProduct.Quantity)+respWarehouse.Quantity {
+		resp, err := h.services.SaleProductService().Create(ctx, &sale_service.CreateSaleProductRequest{
+			Id:        saleProduct.Id,
+			SaleId:    saleProduct.SaleId,
+			ProductId: saleProduct.ProductId,
+			Quantity:  saleProduct.Quantity + int32(saleProduct.Quantity),
+			Price:     saleProduct.Price,
+		})
+		if err != nil {
+			h.handlerResponse(ctx, "SaleProductService().Update", http.StatusBadRequest, err.Error())
+
+			return
+		}
+		ctx.JSON(http.StatusOK, resp)
+
+	} else {
+		fmt.Println("Not Enough Produtxt", err.Error())
+		ctx.JSON(http.StatusBadRequest, "not enough product")
+		return
+	}
+
 }
 
 // GetAllSaleProducts godoc

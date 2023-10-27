@@ -46,6 +46,14 @@ message UpdateSaleProductRequest {
 message GetSaleProductResponse {
   SaleProduct SaleProduct = 1;
 }
+message SaleIdRequest {
+  string SaleId = 1;
+  string ProductId = 2;
+}
+
+message SaleId {
+  string SaleId = 1;
+}
 
 message GetAllSaleProductRequest {
   int32 limit = 1;
