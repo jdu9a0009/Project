@@ -202,3 +202,82 @@ func (c *saleProductRepo) DeleteSaleProduct(ctx context.Context, req *sale_servi
 
 	return "deleted", nil
 }
+
+func (c *saleProductRepo) GetSaleById(ctx context.Context, req *sale_service.SaleIdRequest) (resp *sale_service.SaleProduct, err error) {
+	var created_at sql.NullString
+	var updated_at sql.NullString
+	query := `
+    SELECT 
+			"id", 
+			"sale_id", 
+			"product_id", 
+			"quantity", 
+			"price", 
+			"created_at", 
+			"updated_at"
+    FROM "sale_products" WHERE "deleted_at" IS NULL AND id = $1 AND product_id=$2
+    `
+
+	saleProduct := sale_service.SaleProduct{}
+	err = c.db.QueryRow(context.Background(), query, req.SaleId, req.ProductId).Scan(
+		&saleProduct.Id,
+		&saleProduct.SaleId,
+		&saleProduct.ProductId,
+		&saleProduct.Quantity,
+		&saleProduct.Price,
+		&created_at,
+		&updated_at,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("saleProduct not found")
+		}
+		return nil, fmt.Errorf("failed to get saleProduct: %w", err)
+	}
+
+	saleProduct.CreatedAt = created_at.String
+
+	if updated_at.Valid {
+		saleProduct.UpdatedAt = updated_at.String
+	}
+
+	return &saleProduct, nil
+}
+
+func (c *saleProductRepo) GetAllSaleById(ctx context.Context, req *sale_service.SaleId) (resp *sale_service.GetAllSaleProductResponse, err error) {
+	var created_at sql.NullString
+	var updated_at sql.NullString
+	query := `
+    SELECT 
+			"id", 
+			"sale_id", 
+			"product_id", 
+			"quantity", 
+			"price", 
+			"created_at", 
+			"updated_at"
+    FROM "sale_products" WHERE "deleted_at" IS NULL AND sale_id = $1 
+    `
+
+	saleProduct := sale_service.SaleProduct{}
+	err = c.db.QueryRow(context.Background(), query, req.SaleId).Scan(
+		&saleProduct.Id,
+		&saleProduct.SaleId,
+		&saleProduct.ProductId,
+		&saleProduct.Quantity,
+		&saleProduct.Price,
+		&created_at,
+		&updated_at,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan row: %w", err)
+	}
+
+	saleProduct.CreatedAt = created_at.String
+	if updated_at.Valid {
+		saleProduct.UpdatedAt = updated_at.String
+	}
+
+	resp.SaleProducts = append(resp.SaleProducts, &saleProduct)
+	return resp, nil
+}

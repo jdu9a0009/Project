@@ -70,3 +70,20 @@ func (s *SaleProductService) Delete(ctx context.Context, req *sale_service.IdReq
 
 	return &sale_service.Response{Message: resp}, nil
 }
+func (t *SaleProductService) GetBySaleId(ctx context.Context, req *sale_service.SaleIdRequest) (*sale_service.SaleProduct, error) {
+	saleProduct, err := t.storage.SaleProduct().GetSaleById(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return saleProduct, nil
+}
+
+func (t *SaleProductService) GetAllBySaleId(ctx context.Context, req *sale_service.SaleId) (*sale_service.GetAllSaleProductResponse, error) {
+	saleProduct, err := t.storage.SaleProduct().GetAllSaleById(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return saleProduct, nil
+}

@@ -66,7 +66,13 @@ message GetAllSaleRequest {
   string createdAtFrom = 8;
   string createdAtTo = 9;
 }
-
+message SaleIdRequest {
+  string SaleId = 1;
+  string ProductId = 2;
+}
+message SaleId {
+  string SaleId =1;
+}
 message GetAllSaleResponse {
   repeated Sale sales = 1;
   int32 count = 2;

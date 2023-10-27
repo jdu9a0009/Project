@@ -51,4 +51,7 @@ type SaleProductI interface {
 	GetAllSaleProduct(context.Context, *sale_service.GetAllSaleProductRequest) (*sale_service.GetAllSaleProductResponse, error)
 	UpdateSaleProduct(context.Context, *sale_service.UpdateSaleProductRequest) (string, error)
 	DeleteSaleProduct(context.Context, *sale_service.IdRequest) (string, error)
+
+	GetSaleById(ctx context.Context, req *sale_service.SaleIdRequest) (*sale_service.SaleProduct, error)
+	GetAllSaleById(ctx context.Context, req *sale_service.SaleId) (*sale_service.GetAllSaleProductResponse, error)
 }
